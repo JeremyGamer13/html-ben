@@ -38,6 +38,7 @@
         </noscript>
         <div id="screen" class="game" style="display: none;">
             <img style="margin-top: 17.5%;margin-left: 1%;width: 20%;" src="./assets/credit.png">
+            <button style="position:absolute;left:5%;bottom:3%;width: 20%;height: 10%;" id="resetButton" onclick="resetRecognition()">Click to fix no microphone issue</button>
             <img id="ben" src="./assets/animations/stand.gif">
         </div>
         <script>
@@ -48,7 +49,7 @@
             window.onclick = () => {
                 canPlaySound = true
             }
-            const recognition = new webkitSpeechRecognition()
+            let recognition = new webkitSpeechRecognition()
             recognition.continuous = true
             recognition.lang = 'en-US'
             recognition.interimResults = false
@@ -80,6 +81,16 @@
                 } catch {
                     
                 }
+            }
+            document.getElementById("resetButton").onclick = () => {
+                let Newrecognition = new webkitSpeechRecognition()
+                Newrecognition.continuous = recognition.continuous
+                Newrecognition.lang = recognition.lang
+                Newrecognition.interimResults = recognition.interimResults
+                Newrecognition.onresult = recognition.onresult
+                recognition.stop()
+                recognition = Newrecognition
+                recognition.start()
             }
         </script>
     </body>
