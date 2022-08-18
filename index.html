@@ -27,15 +27,21 @@
                 top: 0%;
             }
             #resetButton {
-                background-color: dodgerblue;
-                color: white;
                 position:absolute;
-                left:5%;
-                bottom:3%;
+                margin-left: 1%;
+                margin-top: 42%;
                 width: 20%;
-                height: 10%;
-                font-size: 150%;
-                overflow: auto;
+            }
+            #uhuhButton {
+                position:absolute;
+                margin-left: 1%;
+                margin-top: 39%;
+                width: 20%;
+            }
+            .interactiveButton {
+                position: absolute;
+                margin-left: 92%;
+                width: 7.5%;
             }
         </style>
     </head>
@@ -48,24 +54,84 @@
             </center>
         </noscript>
         <div id="screen" class="game" style="display: none;">
-            <img style="margin-top: 17.5%;margin-left: 1%;width: 20%;" src="./assets/credit.png">
-            <button id="resetButton">Click to reset talking detection</button>
+            <img style="margin-top: 17.5%;margin-left: 1%;width: 20%;position: absolute;" src="./assets/credit.png">
+            <img id="uhuhButton" src="./assets/uh-huh-button.png">
+            <img id="resetButton" src="./assets/micreset.png">
             <img id="ben" src="./assets/animations/stand.gif">
+            <img id="interact_startCall" class="interactiveButton" style="margin-top: 0.5%;" src="./assets/icons/gumb_phone_on.png" onclick="handlePhoneCalling()">
         </div>
+        <audio id="ingameAudioPlayer" style="display: none;"></audio>
         <script>
             const display = document.getElementById("screen")
             const ben = document.getElementById("ben")
             display.removeAttribute("style")
+            var buttonsWork = true
             let canPlaySound = false
+            let isCalling = false
+            let allowUhhuhResponse = false
+            document.getElementById("uhuhButton").onclick = () => {
+                allowUhhuhResponse = !allowUhhuhResponse
+                document.getElementById("uhuhButton").src = "./assets/uh-huh-button" + (allowUhhuhResponse ? "2" : "") + ".png"
+            }
             window.onclick = () => {
                 canPlaySound = true
+            }
+            const handlePhoneCalling = () => {
+                if (!buttonsWork) return
+                buttonsWork = false
+                if (!isCalling) {
+                    const audio = new Audio('./assets/audio/ring.wav');
+                    audio.play();
+                    ben.src = './assets/animations/pickup.gif'
+                    audio.onended = () => {
+                        isCalling = true
+                        audio.onended = null
+                    }
+                    buttonsWork = true
+                    document.getElementById("interact_startCall").src = "./assets/icons/gumb_phone_off.png"
+                    return
+                }
+                const audio = new Audio('./assets/audio/hangup.wav');
+                audio.play();
+                ben.src = './assets/animations/endcall.gif'
+                audio.onended = () => {
+                    isCalling = false
+                    audio.onended = null
+                }
+                buttonsWork = true
+                document.getElementById("interact_startCall").src = "./assets/icons/gumb_phone_on.png"
+                return
             }
             let recognition = new webkitSpeechRecognition()
             recognition.continuous = true
             recognition.lang = 'en-US'
             recognition.interimResults = false
             recognition.start()
+            recognition.onspeechstart = () => {
+                if (isCalling) return
+                console.log("start listening...")
+            }
+            recognition.onend = () => {
+                try {
+                    recognition.start()
+                } catch {
+                    
+                }
+            }
+            /*
+            function getLocalStream() {
+                navigator.mediaDevices.getUserMedia({video: false, audio: true}).then((stream) => {
+                    document.getElementById("ingameAudioPlayer").srcObject = stream
+                }).catch((err) => {
+                    console.log("Ben was unable to continue listening")
+                });
+            }
+            getLocalStream();
+            */
             recognition.onresult = (event) => {
+                if (!isCalling) {
+                    return
+                }
                 if (!canPlaySound) {
                     alert("Ben understood you, but you need to click on the page at least once for him to be able to respond correctly!")
                     return
@@ -73,8 +139,9 @@
                 const speechResult = event.results[event.results.length - 1][0].transcript;
                 const minimizedSpeech = String(speechResult).toLowerCase().replaceAll(" ", "").replaceAll(".", " ").replaceAll("?", "").replaceAll("!", "").replaceAll(",", "")
                 const responses = ["yes", "no", "ugh", "hohoho"]
+                if (allowUhhuhResponse) responses.push("uhhuh")
                 let response = responses[Math.round(Math.random() * (responses.length - 1))]
-                if (["s***yourpants", "****yourpants", "fard"].includes(minimizedSpeech)) {
+                if (["shityourpants", "s***yourpants", "****yourpants", "fard"].includes(minimizedSpeech)) {
                     response = "fard"
                 }
                 if (["fuckyoupieceofshit", "****youpieceof****", "f***youpieceofs***"].includes(minimizedSpeech)) {
@@ -84,6 +151,7 @@
                 audio.play();
                 ben.src = './assets/animations/' + response + '.gif'
                 console.log("Ben heard:", speechResult, "\nParsed:", minimizedSpeech, "\nBen said:", response)
+                console.info(event)
                 try {
                     recognition.start()
                 } catch {
