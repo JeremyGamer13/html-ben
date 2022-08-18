@@ -75,6 +75,11 @@
                 audio.play();
                 ben.src = './assets/animations/' + response + '.gif'
                 console.log("Ben heard:", speechResult, "\nBen said:", response)
+                try {
+                    recognition.start()
+                } catch {
+                    
+                }
             }
         </script>
     </body>
