@@ -43,6 +43,10 @@
                 margin-left: 92%;
                 width: 7.5%;
             }
+            .hitbox {
+                position: absolute;
+                opacity: 0%;
+            }
         </style>
     </head>
     <body style="background-color: black;">
@@ -57,7 +61,11 @@
             <img style="margin-top: 17.5%;margin-left: 1%;width: 20%;position: absolute;" src="./assets/credit.png">
             <img id="uhuhButton" src="./assets/uh-huh-button.png">
             <img id="resetButton" src="./assets/micreset.png">
+            <!-- game elements -->
             <img id="ben" src="./assets/animations/stand.gif">
+            <!-- hitboxes -->
+            <img id="hitbox_face" style="margin-top: 10%;margin-left: 41.5%;width: 10%;" class="hitbox" src="./assets/hitboxes/face.png">
+            <!-- gui / menu -->
             <img id="interact_startCall" class="interactiveButton" style="margin-top: 0.5%;" src="./assets/icons/gumb_phone_on.png" onclick="handlePhoneCalling()">
         </div>
         <audio id="ingameAudioPlayer" style="display: none;"></audio>
@@ -72,6 +80,11 @@
             document.getElementById("uhuhButton").onclick = () => {
                 allowUhhuhResponse = !allowUhhuhResponse
                 document.getElementById("uhuhButton").src = "./assets/uh-huh-button" + (allowUhhuhResponse ? "2" : "") + ".png"
+            }
+            document.getElementById("hitbox_face").onclick = () => {
+                ben.src = './assets/animations/attacks/hit' + Math.round(Math.random()) + '.gif'
+                const audio = new Audio('./assets/audio/attacks/head' + Math.round(Math.random()) + '.wav');
+                audio.play();
             }
             window.onclick = () => {
                 canPlaySound = true
@@ -102,15 +115,11 @@
                 document.getElementById("interact_startCall").src = "./assets/icons/gumb_phone_on.png"
                 return
             }
-            let recognition = new webkitSpeechRecognition()
+            let recognition = new webkitSpeechRecognition() || new SpeechRecognition();
             recognition.continuous = true
             recognition.lang = 'en-US'
             recognition.interimResults = false
             recognition.start()
-            recognition.onspeechstart = () => {
-                if (isCalling) return
-                console.log("start listening...")
-            }
             /*
             recognition.onend = () => {
                 try {
@@ -153,7 +162,7 @@
                 audio.play();
                 ben.src = './assets/animations/' + response + '.gif'
                 console.log("Ben heard:", speechResult, "\nParsed:", minimizedSpeech, "\nBen said:", response)
-                console.info(event)
+                //console.info(event)
                 try {
                     recognition.start()
                 } catch {
@@ -161,7 +170,7 @@
                 }
             }
             document.getElementById("resetButton").onclick = () => {
-                let Newrecognition = new webkitSpeechRecognition()
+                let Newrecognition = new webkitSpeechRecognition() || new SpeechRecognition();
                 Newrecognition.continuous = recognition.continuous
                 Newrecognition.lang = recognition.lang
                 Newrecognition.interimResults = recognition.interimResults
